@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WanderLens — Discover Places Around You</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════ LOADING SCREEN ═══════════════════════ -->
+  <div id="loader" class="loader-screen">
+    <div class="loader-inner">
+      <div class="loader-globe">
+        <div class="globe-ring"></div>
+        <div class="globe-ring r2"></div>
+        <div class="globe-dot"></div>
+      </div>
+      <p class="loader-text">Finding your world…</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ NAVBAR ═══════════════════════ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <span class="logo-icon">◈</span>
+        <span>WanderLens</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#discover">Discover</a>
+        <a href="#map-section">Map</a>
+        <a href="#interests">Interests</a>
+        <a href="#favorites">Saved</a>
+      </div>
+
+      <div class="nav-actions">
+        <!-- Dark Mode Toggle -->
+        <button class="icon-btn" id="themeToggle" title="Toggle dark mode">
+          <i data-lucide="sun" class="icon-sun"></i>
+          <i data-lucide="moon" class="icon-moon"></i>
+        </button>
+        <!-- Chatbot Toggle -->
+        <button class="icon-btn" id="chatToggle" title="Travel Assistant">
+          <i data-lucide="message-circle"></i>
+        </button>
+        <!-- Mobile Menu -->
+        <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+    </div>
+    <!-- Mobile Nav -->
+    <div class="mobile-nav" id="mobileNav">
+      <a href="#discover">Discover</a>
+      <a href="#map-section">Map</a>
+      <a href="#interests">Interests</a>
+      <a href="#favorites">Saved</a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════ HERO ═══════════════════════ -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <div class="hero-particles" id="heroParticles"></div>
+      <div class="hero-gradient"></div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i data-lucide="map-pin"></i>
+        <span id="locationBadge">Detecting location…</span>
+      </div>
+      <h1 class="hero-title">
+        <span class="line1">Explore</span>
+        <span class="line2 italic">the world</span>
+        <span class="line3">around you.</span>
+      </h1>
+      <p class="hero-sub">Hyper-local travel discovery — find hidden gems, ancient temples, roaring waterfalls, and thrilling trails, all within reach.</p>
+
+      <div class="hero-search-wrap">
+        <div class="search-box" id="searchBox">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" id="searchInput" placeholder="Search a city, landmark, or vibe…" autocomplete="off" />
+          <button class="search-btn" id="searchBtn">Go</button>
+        </div>
+        <div class="search-suggestions" id="searchSuggestions"></div>
+      </div>
+
+      <div class="hero-cta-row">
+        <button class="btn-primary" id="detectLocationBtn">
+          <i data-lucide="crosshair"></i> Detect My Location
+        </button>
+        <button class="btn-ghost" id="planTripBtn">
+          <i data-lucide="route"></i> Plan My Trip
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-scroll-hint">
+      <span>Scroll to explore</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ WEATHER STRIP ═══════════════════════ -->
+  <div class="weather-strip" id="weatherStrip" style="display:none">
+    <div class="weather-inner">
+      <div class="weather-info" id="weatherInfo">
+        <i data-lucide="cloud-sun"></i>
+        <span id="weatherText">Loading weather…</span>
+      </div>
+      <div class="weather-location" id="weatherLocation"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ INTERESTS SECTION ═══════════════════════ -->
+  <section class="interests-section" id="interests">
+    <div class="section-wrap">
+      <div class="section-header">
+        <span class="section-label">Personalise</span>
+        <h2>What moves you?</h2>
+        <p>Select your travel interests for tailored suggestions.</p>
+      </div>
+
+      <div class="interest-tags" id="interestTags">
+        <button class="tag active" data-interest="trekking"><i data-lucide="mountain-snow"></i> Trekking</button>
+        <button class="tag" data-interest="temples"><i data-lucide="landmark"></i> Temples</button>
+        <button class="tag" data-interest="lakes"><i data-lucide="waves"></i> Lakes</button>
+        <button class="tag" data-interest="waterfalls"><i data-lucide="droplets"></i> Waterfalls</button>
+        <button class="tag" data-interest="wildlife"><i data-lucide="paw-print"></i> Wildlife</button>
+        <button class="tag" data-interest="camping"><i data-lucide="tent"></i> Camping</button>
+        <button class="tag" data-interest="heritage"><i data-lucide="castle"></i> Heritage</button>
+        <button class="tag" data-interest="beaches"><i data-lucide="sun"></i> Beaches</button>
+        <button class="tag" data-interest="caves"><i data-lucide="zap"></i> Caves</button>
+        <button class="tag" data-interest="meditation"><i data-lucide="sparkles"></i> Meditation</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ DISCOVER ═══════════════════════ -->
+  <section class="discover-section" id="discover">
+    <div class="section-wrap">
+      <div class="section-header">
+        <span class="section-label">Nearby</span>
+        <h2>Places to Explore</h2>
+        <p>Curated spots based on your location and interests.</p>
+      </div>
+
+      <!-- Category Filters -->
+      <div class="filter-bar">
+        <button class="filter-btn active" data-cat="all">All</button>
+        <button class="filter-btn" data-cat="nature"><i data-lucide="tree-pine"></i> Nature</button>
+        <button class="filter-btn" data-cat="historical"><i data-lucide="building-2"></i> Historical</button>
+        <button class="filter-btn" data-cat="religious"><i data-lucide="star"></i> Religious</button>
+        <button class="filter-btn" data-cat="adventure"><i data-lucide="zap"></i> Adventure</button>
+      </div>
+
+      <!-- Place Cards Grid -->
+      <div class="places-grid" id="placesGrid">
+        <!-- Cards injected by JS -->
+      </div>
+
+      <div class="empty-state" id="emptyState" style="display:none">
+        <i data-lucide="compass"></i>
+        <p>No places found for this filter. Try another category!</p>
+      </div>
+
+      <button class="btn-outline load-more" id="loadMoreBtn" style="display:none">
+        Load More Places <i data-lucide="chevron-down"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ MAP SECTION ═══════════════════════ -->
+  <section class="map-section" id="map-section">
+    <div class="section-wrap">
+      <div class="section-header">
+        <span class="section-label">Interactive</span>
+        <h2>Places on the Map</h2>
+        <p>Click a marker to explore — your location is the blue dot.</p>
+      </div>
+      <div class="map-container">
+        <div id="leafletMap"></div>
+        <div class="map-legend">
+          <div class="legend-item"><span class="dot nature"></span> Nature</div>
+          <div class="legend-item"><span class="dot historical"></span> Historical</div>
+          <div class="legend-item"><span class="dot religious"></span> Religious</div>
+          <div class="legend-item"><span class="dot adventure"></span> Adventure</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ FAVORITES ═══════════════════════ -->
+  <section class="favorites-section" id="favorites">
+    <div class="section-wrap">
+      <div class="section-header">
+        <span class="section-label">Saved</span>
+        <h2>Your Favourites</h2>
+        <p>Places you've bookmarked for future adventures.</p>
+      </div>
+      <div class="places-grid" id="favGrid">
+        <div class="fav-empty" id="favEmpty">
+          <i data-lucide="bookmark"></i>
+          <p>No saved places yet. Hit the ♥ on any card!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo-icon">◈</span>
+        <span class="brand-name">WanderLens</span>
+        <p>Discover the extraordinary, wherever you are.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </div>
+      <p class="footer-copy">© 2026 WanderLens. Built with curiosity.</p>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════ PLACE DETAIL MODAL ═══════════════════════ -->
+  <div class="modal-overlay" id="placeModal">
+    <div class="modal-card" id="modalCard">
+      <button class="modal-close" id="modalClose"><i data-lucide="x"></i></button>
+      <div class="modal-img-wrap">
+        <img id="modalImg" src="" alt="" />
+        <div class="modal-cat-badge" id="modalCat"></div>
+      </div>
+      <div class="modal-body">
+        <h2 id="modalName"></h2>
+        <div class="modal-meta">
+          <span><i data-lucide="map-pin"></i> <span id="modalDist"></span></span>
+          <span><i data-lucide="tag"></i> <span id="modalCatText"></span></span>
+        </div>
+        <p id="modalDesc"></p>
+        <div class="modal-tags" id="modalTags"></div>
+        <div class="modal-actions">
+          <button class="btn-primary" id="modalDirections"><i data-lucide="navigation"></i> Get Directions</button>
+          <button class="btn-ghost" id="modalSave"><i data-lucide="heart"></i> Save Place</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ TRIP PLANNER MODAL ═══════════════════════ -->
+  <div class="modal-overlay" id="tripModal">
+    <div class="modal-card trip-modal" id="tripCard">
+      <button class="modal-close" id="tripModalClose"><i data-lucide="x"></i></button>
+      <div class="trip-header">
+        <i data-lucide="route"></i>
+        <h2>Your Trip Itinerary</h2>
+        <p id="tripSubtitle"></p>
+      </div>
+      <div class="trip-body" id="tripBody">
+        <!-- Itinerary injected by JS -->
+      </div>
+      <div class="trip-footer">
+        <button class="btn-primary" id="copyItinerary"><i data-lucide="copy"></i> Copy Itinerary</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ CHATBOT ═══════════════════════ -->
+  <div class="chatbot-panel" id="chatbotPanel">
+    <div class="chat-header">
+      <div class="chat-avatar">◈</div>
+      <div>
+        <strong>WanderBot</strong>
+        <span class="online-dot"></span>
+        <p>Travel assistant</p>
+      </div>
+      <button class="icon-btn chat-close" id="chatClose"><i data-lucide="x"></i></button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg bot">
+        <div class="msg-bubble">
+          👋 Hi! I'm WanderBot. Ask me about places near you, travel tips, itineraries, or local cuisine!
+        </div>
+      </div>
+    </div>
+    <div class="chat-quick-btns" id="quickBtns">
+      <button class="quick-btn" data-q="What are the best places near me?">Places near me</button>
+      <button class="quick-btn" data-q="Suggest a 2-day itinerary">2-day itinerary</button>
+      <button class="quick-btn" data-q="Best time to visit">Best season</button>
+      <button class="quick-btn" data-q="Local food to try">Local food</button>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="Ask anything about travel…" />
+      <button class="icon-btn send-btn" id="sendChat"><i data-lucide="send"></i></button>
+    </div>
+  </div>
+  <button class="chatbot-fab" id="chatbotFab" title="WanderBot">
+    <i data-lucide="message-circle"></i>
+    <span class="fab-pulse"></span>
+  </button>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
